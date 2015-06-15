@@ -1,2 +1,2 @@
-# Planes-and-Tanks
+# Planes and Tanks
 Open source multiplayer game.
