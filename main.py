@@ -5,6 +5,7 @@ import socket
 import time
 import sys
 import os
+import netifaces
 mode = 0
 #0 for main menu
 #1 for hosting
@@ -79,8 +80,8 @@ def endgame():
 	sys.exit(0)
 def joingame():
 	print "hi2"
-import socket
-import netifaces
+
+
 gws = netifaces.gateways()
 
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
