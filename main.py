@@ -6,6 +6,7 @@ import time
 import sys
 import os
 import netifaces
+import colorsys
 from pygame.locals import *
 import pygame.font, pygame.event, pygame.draw, string
 mode = 0
@@ -13,6 +14,7 @@ textbox = None
 hostsocket = None
 hostthread = None
 current_name = ""
+players = []
 #0 for main menu
 #1 for hosting
 #2 for joining
@@ -99,6 +101,9 @@ name = pygame.image.load('pics/name.png').convert()
 text = pygame.image.load('pics/text.png').convert()
 go = pygame.image.load('pics/go.png').convert()
 cancel = pygame.image.load('pics/cancel.png').convert()
+question = pygame.image.load('pics/question.png').convert()
+nextt = pygame.image.load('pics/next.png').convert()
+gamename = pygame.image.load('pics/gamename.png').convert()
 screen.blit(title,(offsetx,offsety))
 screen.blit(host,(offsetx,offsety+250))
 screen.blit(join,(offsetx,offsety+400))
@@ -177,7 +182,8 @@ def main():
 			screen.blit(by,(offsetx,offsety+700))
 			pygame.display.update()
 		if mode == 2:
-			pass
+			screen.fill((128,128,128))
+			pygame.display.update()
 def hostgame():
 	global mode, textbox
 	offsetx = (pygame.display.list_modes(0,pygame.FULLSCREEN | pygame.DOUBLEBUF | pygame.HWSURFACE | pygame.NOFRAME)[0][0] - 600)/2
@@ -208,19 +214,38 @@ def endgame():
 def joingame():
 	global mode
 	offsetx = (pygame.display.list_modes(0,pygame.FULLSCREEN | pygame.DOUBLEBUF | pygame.HWSURFACE | pygame.NOFRAME)[0][0] - 600)/2
-	offsety = (pygame.display.list_modes(0,pygame.FULLSCREEN | pygame.DOUBLEBUF | pygame.HWSURFACE | pygame.NOFRAME)[0][1] - 550)/2
+	offsety = (pygame.display.list_modes(0,pygame.FULLSCREEN | pygame.DOUBLEBUF | pygame.HWSURFACE | pygame.NOFRAME)[0][1] - 800)/2
+	#screen.blit(question,(offsetx,offsety))
+	#screen.blit(question,(offsetx,offsety))
+	#screen.blit(question,(offsetx,offsety))
+	#screen.blit(question,(offsetx,offsety))
+	#screen.blit(question,(offsetx,offsety))
 	startstring = ".".join(myip.split('.')[0:-1]) + '.'
 	for i in range(1,256):
-		#print "Checking ip "+startstring+str(i)
+		screen.fill((255,255,255))
+		pygame.draw.line(screen,(0,0,0),(offsetx,offsety),(offsetx+(i*2.35),offsety),100)
+		pygame.display.update()
 		if DoesServiceExist(startstring+str(i),2999):
-			pass
+			connectit(startstring+str(i))
+			return
+	mainmenu()
+def connectit(ipaddress):
+	global mode
 	mode = 2
+	screen.fill((128,128,128))
+	pygame.display.update()
 def hostfunction():
 	global hostsocket,current_name
 	while True:
 		(connection, address) = hostsocket.accept()
 		print address
 		connection.send(current_name)
+		newthread = threading.Thread(target=socketfunction,args=(connection,address))
+		newthread.dameon = True
+		newthread.start()
+def socketfunction(connection,address):
+	netname = connection.recv(4096)
+	players.append(Player(netname,connection,address))
 def DoesServiceExist(host, port):
     host_addr = ""
 
@@ -228,7 +253,7 @@ def DoesServiceExist(host, port):
         host_addr = socket.gethostbyname(host)
 
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.settimeout(0.05)
+        s.settimeout(0.005)
         s.connect((host, port))
         s.close()
     except:
